@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z0DW0ZG97K"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-Z0DW0ZG97K');
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Web App</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="data:application/json;base64,eyJtZWFuIjoiV2VhYkFwcCIsInBvcnRhaW5nIjoiMS4wIiwiYXBwTGVnYWwiOiJpY29uLnBuZyIsImRlc2NyaXB0aW9uIjoiVGhpcyBpcyBhIHdlYiBhcyBhbmQgd2lsbCB3b3JrIGluIHlvdXIgY2FzZSBvZiBpbmZvcm1hdGlvbnMuIiwiZG9tYWluIjoiZGVmYXVsdCIsIm9mZmltZXJhbGZhbGwiOiJBY3RpdmUgc3BvcmFvZnQgdGVjaC5yZW5vdyIsImNoYWxsZW5nZSI6ZmFsc2UsIm1vZGlmaWVkIjpmYWxzZX0=">
+
+  <!-- Web App Icon for Home Screen (iPad) -->
+  <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJy4pM2G_0ViLxs6g-mq68YS7RRUv_XUHg4w&s" type="image/png">
+  <link rel="apple-touch-icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJy4pM2G_0ViLxs6g-mq68YS7RRUv_XUHg4w&s" />
+  
+  <!-- iOS Meta Tags for Full-Screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Include Google API -->
+  <script src="https://apis.google.com/_/scs/abc-static/_/js/k=gapi.lb.en.5oZHy0SiJxw.O/m=gapi_rpc/rt=j/sv=1/d=1/ed=1/rs=AHpOoo-Hry6DG-RE4t9kNz_t6hiwmwXOmA/cb=gapi.loaded_0?le=scs" async></script>
+  <script src="https://apis.google.com/js/api.js?checkCookie=1" gapi_processed="true"></script>
+
+  <style>
+    body, html, iframe {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    .forceIosScrolling {
+      overflow: scroll;
+      -webkit-overflow-scrolling: touch;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Iframe to Load External Content -->
+  <iframe id="innerFrame" name="innerFrame" sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-popups-to-escape-sandbox allow-downloads allow-storage-access-by-user-activation" frameborder="0" allowfullscreen src="https://23azostore.github.io/s8/snow-rider-3d/" style="overflow: auto;"></iframe>
+
+  <!-- JavaScript to handle Google API and iframe interactions -->
+  <script>
+    function loadGapi() {
+      var loaderScript = document.createElement('script');
+      loaderScript.setAttribute('src', 'https://apis.google.com/js/api.js?checkCookie=1');
+      loaderScript.onload = function() {
+        this.onload = function() {};
+        loadGapiClient();
+      };
+      loaderScript.onreadystatechange = function() {
+        if (this.readyState === 'complete') {
+          this.onload();
+        }
+      };
+      (document.head || document.body || document.documentElement).appendChild(loaderScript);
+    }
+
+    function updateInnerFrame(url, enableInteraction, forceIosScrolling) {
+      var urlEl = document.createElement('a');
+      urlEl.setAttribute('href', url);
+      if (urlEl.protocol !== "https:" && urlEl.protocol !== "http:") {
+        return;
+      }
+      var iframe = document.getElementById('innerFrame');
+      iframe.src = url;
+      iframe.onload = function() {
+        gapi.rpc.call('..', 'innerFrameLoaded');
+      };
+      if (enableInteraction) {
+        if (forceIosScrolling) {
+          var iframeParent = iframe.parentElement;
+          iframeParent.classList.add('forceIosScrolling');
+        } else {
+          iframe.style.overflow = 'auto';
+        }
+      } else {
+        iframe.style.pointerEvents = 'none';
+      }
+    }
+
+    function updateInnerIframeCode(userCode, enableInteraction, forceIosScrolling) {
+      gapi.rpc.setup('innerFrame');
+      gapi.rpc.call('innerFrame', 'updateUserHtmlFrame', undefined, userCode, enableInteraction, forceIosScrolling);
+    }
+
+    function onPostMessage(ev) {
+      if (ev.data['magic'] !== 'SHIC') {
+        return;
+      }
+      var type = ev.data['type'];
+      switch (type) {
+        case 'resize':
+          var height = ev.data['height'];
+          gapi.rpc.call('..', 'resize', undefined, height);
+          break;
+      }
+    }
+
+    function onGapiInitialized() {
+      gapi.rpc.call('..', 'gapiInitialized');
+      gapi.rpc.register('updateInnerFrame', updateInnerFrame);
+      gapi.rpc.register('updateInnerIframeCode', updateInnerIframeCode);
+      window.addEventListener('message', onPostMessage);
+    }
+
+    function loadGapiClient() {
+      gapi.load('gapi.rpc', onGapiInitialized);
+    }
+
+    if (document.readyState === 'complete') {
+      loadGapi();
+    } else {
+      self.addEventListener('load', loadGapi);
+    }
+  </script>
+</body>
+</html>
