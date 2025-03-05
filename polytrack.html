@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- Google tag (gtag.js) -->
@@ -15,13 +15,13 @@
     
     <!-- Meta Tags for iOS Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- Status bar color -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Polytrack">
     
     <!-- App Icon (direct image URL) -->
     <link rel="apple-touch-icon" href="https://polytrack.org//data/image/game/polytrack-unblocked.jpg">
     
-    <!-- PWA - Web App Configuration for iOS (using meta tags) -->
+    <!-- PWA - Web App Configuration for iOS -->
     <meta name="theme-color" content="#ADD8E6"> <!-- Light Blue Color for the Toolbar -->
     
     <title>Polytrack - Web App</title>
@@ -43,9 +43,6 @@
         }
     </style>
 
-    <!-- Google API Script -->
-    <script src="https://apis.google.com/_/scs/abc-static/_/js/k=gapi.lb.en.N4A9eqvTwsI.O/m=gapi_rpc/rt=j/sv=1/d=1/ed=1/am=AACA/rs=AHpOoo_O6fwbR1aR8YHQkB3I0FTV0L0UIA/cb=gapi.loaded_0?le=scs" async=""></script>
-    <script src="https://apis.google.com/js/api.js?checkCookie=1" gapi_processed="true"></script>
 </head>
 <body>
 
@@ -57,87 +54,74 @@
     </iframe>
 
     <script>
-        // Load the Google API dynamically
-        function loadGapi() {
-            var loaderScript = document.createElement('script');
-            loaderScript.setAttribute('src', 'https://apis.google.com/js/api.js?checkCookie=1');
-            loaderScript.onload = function() {
-                this.onload = function() {};
-                loadGapiClient();
-            };
-            loaderScript.onreadystatechange = function() {
-                if (this.readyState === 'complete') {
-                    this.onload();
-                }
-            };
-            (document.head || document.body || document.documentElement).appendChild(loaderScript);
+        // Save the game progress to cookies
+        function saveGameProgress(level, score) {
+            const gameProgress = JSON.stringify({ level, score });
+            setCookie('gameProgress', gameProgress, 365);  // Save progress for 1 year
         }
 
-        // Update the iframe content dynamically
-        function updateInnerFrame(url, enableInteraction, forceIosScrolling) {
-            var urlEl = document.createElement('a');
-            urlEl.setAttribute('href', url);
-            if (urlEl.protocol !== "https:" && urlEl.protocol !== "http:") {
+        // Load the game progress from cookies
+        function loadGameProgress() {
+            const savedProgress = getCookie('gameProgress');
+            if (savedProgress) {
+                return JSON.parse(savedProgress);  // Return the parsed progress data
+            }
+            return null;  // No saved progress
+        }
+
+        // Set a cookie
+        function setCookie(cname, cvalue, exdays) {
+            let d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            let expires = "expires=" + d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+
+        // Get a cookie
+        function getCookie(cname) {
+            let name = cname + "=";
+            let decodedCookie = decodeURIComponent(document.cookie);
+            let ca = decodedCookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        // Send message to the iframe
+        function sendProgressToIframe() {
+            const iframe = document.getElementById('innerFrame');
+            const progress = loadGameProgress();
+            if (progress) {
+                // Send progress data to the iframe
+                iframe.contentWindow.postMessage({ type: 'loadProgress', data: progress }, '*');
+            }
+        }
+
+        // Listen for messages from iframe (e.g., when the game updates progress)
+        window.addEventListener('message', function (event) {
+            // Only accept messages from the iframe
+            if (event.origin !== 'https://images-opensocial.googleusercontent.com') {
                 return;
             }
-            
-            var iframe = document.getElementById('innerFrame');
-            iframe.src = url;
-            iframe.onload = function() {
-                gapi.rpc.call('..', 'innerFrameLoaded');
-            };
-            
-            if (enableInteraction) {
-                if (forceIosScrolling) {
-                    var iframeParent = iframe.parentElement;
-                    iframeParent.classList.add('forceIosScrolling');
-                } else {
-                    iframe.style.overflow = 'auto';
-                }
-            } else {
-                iframe.style.pointerEvents = 'none';
+
+            // Handle the message, assuming it's game progress update
+            if (event.data.type === 'updateProgress') {
+                const { level, score } = event.data;
+                saveGameProgress(level, score);  // Save progress
             }
-        }
+        });
 
-        // Update the iframe code with user-provided content
-        function updateInnerIframeCode(userCode, enableInteraction, forceIosScrolling) {
-            gapi.rpc.setup('innerFrame');
-            gapi.rpc.call('innerFrame', 'updateUserHtmlFrame', undefined, userCode, enableInteraction, forceIosScrolling);
-        }
-
-        // Handle post messages (e.g., for resizing the iframe)
-        function onPostMessage(ev) {
-            if (ev.data['magic'] !== 'SHIC') {
-                return;
-            }
-            var type = ev.data['type'];
-            switch (type) {
-                case 'resize':
-                    var height = ev.data['height'];
-                    gapi.rpc.call('..', 'resize', undefined, height);
-                    break;
-            }
-        }
-
-        // Callback when Google API is initialized
-        function onGapiInitialized() {
-            gapi.rpc.call('..', 'gapiInitialized');
-            gapi.rpc.register('updateInnerFrame', updateInnerFrame);
-            gapi.rpc.register('updateInnerIframeCode', updateInnerIframeCode);
-            window.addEventListener('message', onPostMessage);
-        }
-
-        // Load the Google API client
-        function loadGapiClient() {
-            gapi.load('gapi.rpc', onGapiInitialized);
-        }
-
-        // Initialize the script when the document is ready
-        if (document.readyState === 'complete') {
-            loadGapi();
-        } else {
-            self.addEventListener('load', loadGapi);
-        }
+        // Initialize the game when the page loads
+        window.onload = function() {
+            sendProgressToIframe();  // Send the saved progress (if any) to the iframe on page load
+        };
     </script>
 
 </body>
