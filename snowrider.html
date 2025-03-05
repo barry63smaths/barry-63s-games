@@ -49,78 +49,84 @@
 
   <!-- JavaScript to handle Google API and iframe interactions -->
   <script>
-    function loadGapi() {
-      var loaderScript = document.createElement('script');
-      loaderScript.setAttribute('src', 'https://apis.google.com/js/api.js?checkCookie=1');
-      loaderScript.onload = function() {
-        this.onload = function() {};
-        loadGapiClient();
-      };
-      loaderScript.onreadystatechange = function() {
-        if (this.readyState === 'complete') {
-          this.onload();
-        }
-      };
-      (document.head || document.body || document.documentElement).appendChild(loaderScript);
-    }
-
-    function updateInnerFrame(url, enableInteraction, forceIosScrolling) {
-      var urlEl = document.createElement('a');
-      urlEl.setAttribute('href', url);
-      if (urlEl.protocol !== "https:" && urlEl.protocol !== "http:") {
-        return;
-      }
-      var iframe = document.getElementById('innerFrame');
-      iframe.src = url;
-      iframe.onload = function() {
-        gapi.rpc.call('..', 'innerFrameLoaded');
-      };
-      if (enableInteraction) {
-        if (forceIosScrolling) {
-          var iframeParent = iframe.parentElement;
-          iframeParent.classList.add('forceIosScrolling');
-        } else {
-          iframe.style.overflow = 'auto';
-        }
+    // Function to load game state from cookies or localStorage
+    function loadGameState() {
+      let gameState;
+      
+      // First try to load from cookies
+      const cookieGameState = getCookie("gameState");
+      if (cookieGameState) {
+        gameState = JSON.parse(cookieGameState);
       } else {
-        iframe.style.pointerEvents = 'none';
+        // If no cookie, try loading from localStorage
+        const localStorageGameState = localStorage.getItem("gameState");
+        if (localStorageGameState) {
+          gameState = JSON.parse(localStorageGameState);
+        }
+      }
+
+      // If there's a saved state, apply it to the game
+      if (gameState) {
+        console.log("Loaded saved game state:", gameState);
+        // Here you would apply this game state to the game, depending on how your game handles this.
+      } else {
+        console.log("No saved game state found.");
       }
     }
 
-    function updateInnerIframeCode(userCode, enableInteraction, forceIosScrolling) {
-      gapi.rpc.setup('innerFrame');
-      gapi.rpc.call('innerFrame', 'updateUserHtmlFrame', undefined, userCode, enableInteraction, forceIosScrolling);
+    // Function to save game state to cookies and localStorage
+    function saveGameState(state) {
+      // Save to cookie (expires in 30 days)
+      setCookie("gameState", JSON.stringify(state), 30);
+
+      // Save to localStorage
+      localStorage.setItem("gameState", JSON.stringify(state));
     }
 
-    function onPostMessage(ev) {
-      if (ev.data['magic'] !== 'SHIC') {
-        return;
+    // Function to set a cookie
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + d.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    // Function to get a cookie by name
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
       }
-      var type = ev.data['type'];
-      switch (type) {
-        case 'resize':
-          var height = ev.data['height'];
-          gapi.rpc.call('..', 'resize', undefined, height);
-          break;
-      }
+      return null;
     }
 
-    function onGapiInitialized() {
-      gapi.rpc.call('..', 'gapiInitialized');
-      gapi.rpc.register('updateInnerFrame', updateInnerFrame);
-      gapi.rpc.register('updateInnerIframeCode', updateInnerIframeCode);
-      window.addEventListener('message', onPostMessage);
+    // Function to clear a cookie by name
+    function eraseCookie(name) {
+      document.cookie = name + "=; Max-Age=-99999999;";
     }
 
-    function loadGapiClient() {
-      gapi.load('gapi.rpc', onGapiInitialized);
+    // Simulating game state change (you can replace this with your game-specific state)
+    function simulateGameStateChange() {
+      const gameState = {
+        level: 5,
+        score: 1200,
+        lives: 3
+      };
+      console.log("Game state saved:", gameState);
+      saveGameState(gameState);
     }
 
-    if (document.readyState === 'complete') {
-      loadGapi();
-    } else {
-      self.addEventListener('load', loadGapi);
-    }
+    // Simulate loading game state on page load
+    window.onload = function() {
+      loadGameState();
+    };
+
+    // Example of game state change (triggered by some event)
+    // In your game, this would be triggered after a level up, scoring, or any other state change.
+    setTimeout(simulateGameStateChange, 5000);  // Simulate a state change after 5 seconds
   </script>
 </body>
 </html>
