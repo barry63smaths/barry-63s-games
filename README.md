@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
+    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z0DW0ZG97K"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-Z0DW0ZG97K');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-Z0DW0ZG97K');
     </script>
 
     <meta charset="UTF-8">
@@ -16,6 +18,7 @@
     <meta name="apple-mobile-web-app-title" content="Barry 63 Fullscreen">
     <meta name="theme-color" content="#000000">
 
+    <!-- App Icon -->
     <link rel="apple-touch-icon" href="https://avatars.cloudflare.steamstatic.com/8508f3bec17102cdbbc768b4184ace4ae42d3756_full.jpg">
     <link rel="icon" type="image/png" sizes="192x192" href="https://avatars.cloudflare.steamstatic.com/8508f3bec17102cdbbc768b4184ace4ae42d3756_full.jpg">
     <link rel="icon" type="image/png" sizes="512x512" href="https://avatars.cloudflare.steamstatic.com/8508f3bec17102cdbbc768b4184ace4ae42d3756_full.jpg">
@@ -23,6 +26,13 @@
     <title>Barry 63 Fullscreen</title>
 
     <style>
+        /* Global Reset and Layout */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -34,6 +44,7 @@
             position: relative;
         }
 
+        /* Background container */
         .container {
             width: 100%;
             height: 100%;
@@ -56,6 +67,7 @@
             z-index: 1;
         }
 
+        /* Content Box */
         .content {
             text-align: center;
             z-index: 2;
@@ -64,6 +76,9 @@
             backdrop-filter: blur(8px);
             background: rgba(0, 0, 0, 0.4);
             border-radius: 12px;
+            width: 100%;
+            max-width: 350px;
+            margin: auto;
         }
 
         h1 {
@@ -135,30 +150,35 @@
             }
         }
 
+        /* Back Button (Floating Tab) */
         .back-tab {
-            position: absolute;
+            position: fixed;
             top: 20px;
-            left: 20px;
+            left: -80px;
             width: 100px;
             height: 40px;
             background: #333;
             color: white;
             font-size: 1em;
             font-weight: bold;
-            border-radius: 5px;
+            border-radius: 5px 0 0 5px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease-in-out;
             z-index: 3;
-            display: none;
         }
 
         .back-tab:hover {
-            background-color: #555;
+            left: 0;
         }
 
+        .back-tab span {
+            margin-left: 5px;
+        }
+
+        /* Full-Screen Game Iframe */
         iframe {
             display: none;
             width: 100vw;
@@ -170,46 +190,65 @@
             z-index: 2;
         }
 
-        /* Cookie consent */
+        /* Cookie Consent Styles */
         .cookie-consent {
             position: fixed;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: rgba(0, 0, 0, 0.8);
             color: white;
             padding: 15px;
-            border-radius: 8px;
             text-align: center;
-            width: auto;
-            max-width: 400px;
-            z-index: 9999;
+            z-index: 10;
         }
 
         .cookie-consent button {
+            margin-top: 10px;
+            padding: 10px 20px;
             background: #32CD32;
             color: white;
-            padding: 8px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
         }
 
-        .cookie-consent button:hover {
-            background: #28a745;
+        /* Responsive Design Adjustments */
+        @media (max-width: 600px) {
+            .content {
+                padding: 10px;
+                max-width: 90%;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                max-width: 90%;
+            }
+
+            .back-tab {
+                width: 80px;
+                left: -70px;
+                font-size: 0.9em;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Background container -->
     <div class="container"></div>
 
-    <!-- Back button for game -->
-    <div class="back-tab" onclick="closeGame()">← Back</div>
+    <!-- Back Button Tab -->
+    <div class="back-tab" onclick="closeGame()">
+        ← <span>Back</span>
+    </div>
 
-    <!-- Main content with buttons -->
+    <!-- Main Content -->
     <div class="content">
         <h1>Barry 63 Fullscreen</h1>
+
         <button onclick="startGame('./polytrack.html');"><span>Polytrack Fullscreen</span></button>
         <button onclick="startGame('./polytrack_server2.html');"><span>Polytrack (Server 2) Fullscreen</span></button>
         <button onclick="startGame('./ovo.html');"><span>OvO Fullscreen</span></button>
@@ -217,15 +256,54 @@
         <button onclick="startGame('./run3.html');"><span>Run 3 Fullscreen</span></button>
     </div>
 
-    <!-- Game iframe -->
+    <!-- Game Iframe -->
     <iframe id="game-frame"></iframe>
 
-    <!-- Cookie consent popup -->
-    <div class="cookie-consent" id="cookie-consent">
-        We use cookies to save your game progress. <button onclick="acceptCookies()">I Agree</button>
+    <!-- Cookie Consent Box -->
+    <div id="cookie-consent" class="cookie-consent" style="display:none;">
+        This website uses cookies to save your game progress. By clicking "Accept", you agree to the use of cookies.
+        <br><button onclick="acceptCookies();">Accept</button>
     </div>
 
     <script>
+        // Functions for Cookie Consent
+        function checkCookieConsent() {
+            const cookiesAccepted = getCookie("cookiesAccepted");
+            if (!cookiesAccepted) {
+                document.getElementById('cookie-consent').style.display = 'block';
+            }
+        }
+
+        function acceptCookies() {
+            setCookie("cookiesAccepted", "true", 365);
+            document.getElementById('cookie-consent').style.display = 'none';
+        }
+
+        // Cookie Helper Functions
+        function setCookie(cname, cvalue, exdays) {
+            let d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            let expires = "expires=" + d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+
+        function getCookie(cname) {
+            let name = cname + "=";
+            let decodedCookie = decodeURIComponent(document.cookie);
+            let ca = decodedCookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        // Start the game in an iframe
         function startGame(gameUrl) {
             let iframe = document.getElementById('game-frame');
             if (!iframe) {
@@ -242,36 +320,33 @@
                 document.body.appendChild(iframe);
             }
 
-            // Hide the home menu and show the back button
-            document.querySelector('.content').style.display = 'none';
-            document.querySelector('.back-tab').style.display = 'flex';
+            const content = document.querySelector('.content');
+            const backTab = document.querySelector('.back-tab');
 
+            content.style.display = 'none';
             iframe.src = gameUrl;
             iframe.style.display = 'block';
+            backTab.style.display = 'flex';
         }
 
+        // Close the game and show the home menu again
         function closeGame() {
             const iframe = document.getElementById('game-frame');
+            const content = document.querySelector('.content');
+            const backTab = document.querySelector('.back-tab');
+
             if (iframe) {
                 iframe.remove();
             }
 
-            document.querySelector('.content').style.display = 'block';
-            document.querySelector('.back-tab').style.display = 'none';
+            content.style.display = 'block';
+            backTab.style.display = 'none';
         }
 
-        function acceptCookies() {
-            // Set a cookie indicating that the user has accepted cookies
-            document.cookie = "cookies_accepted=true; path=/; max-age=" + 60 * 60 * 24 * 365;
-            document.getElementById('cookie-consent').style.display = 'none';
-        }
-
-        // Check if cookies are accepted on page load
+        // Check if the cookie consent has been accepted when the page loads
         window.onload = function() {
-            if (document.cookie.includes("cookies_accepted=true")) {
-                document.getElementById('cookie-consent').style.display = 'none';
-            }
-        }
+            checkCookieConsent();
+        };
     </script>
 </body>
 </html>
